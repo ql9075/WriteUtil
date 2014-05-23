@@ -20,12 +20,12 @@
 			}
 			/*已有方法返回*/
 			if( Array.prototype.forEach && obj.forEach === Array.prototype.forEach ){
-				
+
 				return obj.forEach( fn , context ) ;
 			}
 
 			if( obj.length === +obj.length ){
-				
+
 				for( var i = 0 ; i < length ; i++ ){
 
 					if( fn.call( context , obj[i] , i , obj ) === false )
@@ -35,20 +35,20 @@
 				var k;
 				for( k in obj ){
 
-					if( WriteUtil._hasOwn( obj , k ) ){
+					if( this._hasOwn( obj , k ) ){
 
 						if ( fn.call( context , obj[k] , i , obj ) === false )	
 							break;
 					}
 				}
 
-				if( WriteUtil._hasDontEnumBug.hasDontEnumBug() ){
-					var j , dontEnumsLength = WriteUtil._hasDontEnumBug.dontEnums ;
+				if( this._hasDontEnumBug.hasDontEnumBug() ){
+					var j , dontEnumsLength = this._hasDontEnumBug.dontEnums ;
 					for ( j = 0; j < dontEnumsLength; j++) {
-			
+
                          k = dontEnumsLength[i]
                          
-                       if( WriteUtil._hasOwn( obj , k ) ){
+                       if( this._hasOwn( obj , k ) ){
                         	
                         	if ( fn.call( context , obj[k] , i , obj ) === false )
                           	break;
@@ -69,8 +69,10 @@
 				//return;
 			}
 			if( searchObj === null ){
+
 				return -1;
 			}
+
 			/*已有方法返回*/
 			if( Array.prototype.indexOf && obj.indexOf == Array.prototype.indexOf ){
 				return obj.indexOf( searchObj );
@@ -78,11 +80,40 @@
 			for( var i = 0 ; i < length ; i++ ){
 
 				if( obj[i] === searchObj ){
+			
 					return  i;
 				}
 			}
 
 			return -1;
+		},
+		_matchNumber:function( obj , searchObj ){
+
+			var length = obj.length , count = 0;
+
+			if( obj === undefined || obj === null ) {
+				throw new TypeError( "this is null or not defined" );
+				//return;
+			}
+			if( this._isType( obj , "String" ) ){
+				obj = Array.prototype.slice.call( obj );
+			}
+			if( searchObj === null ){
+				return false;
+			}
+			
+			if ( this._indexOf( obj , searchObj) == -1 ) return false;
+
+			for( var i = 0 ; i < length ; i++ ){
+		
+				if( obj[i] === searchObj ){
+					
+					count = ++count;
+					continue;
+				}
+			}
+			
+			return count;
 		},
 		_unique:function( obj ){
 		//数组去重
@@ -95,7 +126,7 @@
 			obj.sort();
 			arr.push(obj[0]);*/
 
-			WriteUtil._forEach( obj ,function( value , i ){
+			this._forEach( obj ,function( value , i ){
 
 				/* 使用indeof查找去重
 				if( WriteUtil._indexOf( arr , obj[i] ) == -1){
@@ -115,7 +146,7 @@
 			})
 
 			return arr;
-			
+
 		},
 		_hasDontEnumBug: {
 			hasDontEnumBug:function(){
@@ -149,7 +180,7 @@
 						'constructor'
 					],*/
 
-					dontEnumsLength = WriteUtil._hasDontEnumBug.dontEnums.length,
+					dontEnumsLength = this._hasDontEnumBug.dontEnums.length,
 					result = [] , i , j 
 				;
 				if( keyType == "keyName" && Object.keys){
@@ -164,38 +195,76 @@
 
 				for( i in obj ){
 
-					if( WriteUtil._isHasOwn( obj , i) ){
+					if( this._isHasOwn( obj , i) ){
 
 						var _traget = keyType == "keyName" ? i :  ( keyType == "keyValue" ? obj[i] : null  ) ;
-						
+
 						result.push( _traget );
 					}
 				}
 
-				if( WriteUtil._hasDontEnumBug.hasDontEnumBug() ){					
+				if( this._hasDontEnumBug.hasDontEnumBug() ){					
 
 					for ( j = 0; j < dontEnumsLength; j++) {
-						
-						if( WriteUtil._isHasOwn( obj , WriteUtil._hasDontEnumBug.dontEnums[j] ) ){
 
-							var _tragetEnumBug = keyType == "keyName" ? WriteUtil._hasDontEnumBug.dontEnums[j] :  ( keyType == "keyValue" ? obj[ WriteUtil._hasDontEnumBug.dontEnums[j] ] : null ) ;
-						
+						if( this._isHasOwn( obj , this._hasDontEnumBug.dontEnums[j] ) ){
+
+							var _tragetEnumBug = keyType == "keyName" ? this._hasDontEnumBug.dontEnums[j] :  ( keyType == "keyValue" ? obj[ this._hasDontEnumBug.dontEnums[j] ] : null ) ;
+
 							result.push( _tragetEnumBug );
 						}
 					}
 				}
-				
+
 				return result;
 			},
 			keysName: function( obj ){
-				
-				return WriteUtil._keys.kesConstrutor( obj , "keyName" );
+
+				return this._keys.kesConstrutor( obj , "keyName" );
 			},
 			keysValue: function( obj ){
-				
-				return WriteUtil._keys.kesConstrutor( obj , "keyValue" );
+
+				return this._keys.kesConstrutor( obj , "keyValue" );
 			}
+		},
+	_Class:function( classs ){
+
+		var c ;
+		if( document.querySelectorAll ){
+		
+			 c = document.querySelectorAll( "."+classs )
+		}else{
+
+			c = findtargets( document.body , [] , classs );
+
+			var findtargets = function( root , ret ,classs){
+
+
+				for (var i = root.firstChild ; i != null ; i = i.nextSibling ) {
+			
+					if( i.nodeType !== 1) continue ;
+
+
+					var getClass= i.getAttribute('class') + "";
+
+					if( getClass.match( classs ) !== null ){
+					
+						ret.push( i )
+
+					}
+				
+					arguments.callee( i , ret ,classs );
+					
+
+				};
+
+				return ret;
+			}
+
 		}
+
+		return c ;
+	}
 
 
 	};
